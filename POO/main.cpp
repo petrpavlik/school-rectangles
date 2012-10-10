@@ -8,11 +8,14 @@
 
 #include <iostream>
 
-unsigned int rectWidth = 10;
-unsigned int rectHeight = 12;
+//unsigned int rectWidth = 10;
+//unsigned int rectHeight = 12;
 int bestResult = -1;
 
+//represents a rectangle
 long long steps = 0;
+
+//-----------------------------------------------
 
 struct Rect
 {
@@ -41,7 +44,9 @@ struct Rect
 	int height; ///< Height of the rectangle.
 };
 
+//-----------------------------------------------
 
+//represents a field
 struct Field
 {
     Field(unsigned int width, unsigned int height) {
@@ -70,9 +75,9 @@ struct Field
         //How many gaps were skipped. Is this number greater than bestResult?
         int numSkippedGaps = 0;
      
-        for (int y=0; y<rectHeight; y++) {
+        for (int y=0; y<height; y++) {
             
-            for (int x=0; x<rectWidth; x++) {
+            for (int x=0; x<width; x++) {
                 
                 //find first free cell in this row
                 if (arrayValueAtPosition(x, y)==0) {
@@ -86,24 +91,29 @@ struct Field
                     }
                     
                     numSkippedGaps++;
+                    //std::cout << "skipping gap at " << x << " y " << y << std::endl;
                     
                     if (bestResult!=-1 && numSkippedGaps>=bestResult) {
                         //we can cut this off
-                        std::cout << "cutting" << std::endl;
+                        //std::cout << "cutting " << numSkippedGaps << std::endl;
+                        //print();
                         return false;
                     }
+
                 }
             }
         }
         
         //cannot fit it anywhere
         if (containsRequiredRects()) {
-            //print();
+            
+            print();
             
             int result = getNumberOfGaps();
             
             if (bestResult == -1 || result < bestResult) {
                 bestResult = result;
+                std::cout << "best result so far " << bestResult << std::endl;
             }
         }
         return false;
@@ -225,6 +235,8 @@ struct Field
     char* array;
 };
 
+//-----------------------------------------------
+
 void fillFieldWithRect(Field field, Rect rect) {
     
     /*steps++;
@@ -246,6 +258,8 @@ void fillFieldWithRect(Field field, Rect rect) {
         //std::cout << "no";
     }
 }
+
+//-----------------------------------------------
 
 int main(int argc, const char * argv[])
 {
