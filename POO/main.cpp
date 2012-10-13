@@ -251,13 +251,13 @@ struct Item
 {
     Item() {
         field = NULL;
-        rect = NULL;
+        index = 0;
     }
     
-    Item(Field* field, Rect* rect) {
+    Item(Field* field, int index) {
     
         this->field = field;
-        this->rect = rect;
+        this->index = index;
     }
     
     ~Item() {
@@ -265,14 +265,10 @@ struct Item
         if (field) {
             delete field;
         }
-        
-        if (rect) {
-            delete rect;
-        }
     }
     
     Field* field;
-    Rect* rect;
+    int index;
 };
 
 //-----------------------------------------------
@@ -302,37 +298,58 @@ void processUeingRecursion(Field field) {
     fillFieldWithRect(field, Rect(5, 1));
 }
 
-void processUsingStack(Field field) {
+void processUsingStack2(Field field) {
     
     std::list<Item*> stack;
     
-    stack.push_back(new Item(new Field(field), new Rect(3, 3)));
-    stack.push_back(new Item(new Field(field), new Rect(2, 4)));
-    stack.push_back(new Item(new Field(field), new Rect(4, 2)));
-    stack.push_back(new Item(new Field(field), new Rect(1, 5)));
-    stack.push_back(new Item(new Field(field), new Rect(5, 1)));
+    stack.push_back(new Item(new Field(field), 0));
     
     while (stack.size()) {
         
-        Field* pField = stack.front()->field;
-        Rect* rect = stack.front()->rect;
+        Item* pItem = stack.back();
+        Field* pField = pItem->field;
         
-        if(pField->addRect(*rect)) {
-            
-            stack.push_back(new Item(new Field(*pField), new Rect(3, 3)));
-            stack.push_back(new Item(new Field(*pField), new Rect(2, 4)));
-            stack.push_back(new Item(new Field(*pField), new Rect(4, 2)));
-            stack.push_back(new Item(new Field(*pField), new Rect(1, 5)));
-            stack.push_back(new Item(new Field(*pField), new Rect(5, 1)));
+        Rect* pRectToTry = NULL;
+        
+        if (pItem->index==0) {
+            pRectToTry = new Rect(3, 3);
+        }
+        else if(pItem->index==1) {
+            pRectToTry = new Rect(2, 4);
+        }
+        else if(pItem->index==2) {
+            pRectToTry = new Rect(4, 2);
+        }
+        else if(pItem->index==3) {
+            pRectToTry = new Rect(1, 5);
+        }
+        else if(pItem->index==4) {
+            pRectToTry = new Rect(5, 1);
         }
         else {
-            //std::cout << "X" << std::endl;
+            stack.pop_back();
+            delete pItem;
         }
         
-        Item* itemToDelete = stack.front();
-        stack.pop_front();
-        delete itemToDelete;
+        
+        if (pRectToTry) {
+            
+            Field* pNewField = new Field(*pField);
+            
+            if(pNewField->addRect(*pRectToTry)) {
+                
+                stack.push_back(new Item(pNewField, 0));
+            }
+            else {
+                delete pNewField;
+            }
+            
+            pItem->index++;
+            delete pRectToTry;
+        }
+        
     }
+    
 }
 
 //-----------------------------------------------
@@ -340,11 +357,11 @@ void processUsingStack(Field field) {
 int main(int argc, const char * argv[])
 {
 
-    Field field = Field(6, 5);
+    Field field = Field(9, 9);
     
     
     //processUeingRecursion(field);
-    processUsingStack(field);
+    processUsingStack2(field);
     
     
     std::cout << "num steps " << steps << std::endl;
