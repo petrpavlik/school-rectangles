@@ -7,6 +7,7 @@
 //
 
 #include <iostream>
+#include <list>
 
 //unsigned int rectWidth = 10;
 //unsigned int rectHeight = 12;
@@ -20,11 +21,11 @@ long long steps = 0;
 struct Rect
 {
 	/// Constructor.
-	Rect(int x, int y, int width, int height) : x(x), y(y), width(width), height(height)
+    Rect(int width, int height) : x(0), y(0), width(width), height(height)
 	{
 	}
     
-    Rect(int width, int height) : x(0), y(0), width(width), height(height)
+    Rect() : x(0), y(0), width(0), height(0)
 	{
 	}
 
@@ -49,6 +50,7 @@ struct Rect
 //represents a field
 struct Field
 {
+
     Field(unsigned int width, unsigned int height) {
 
         this->width = width;
@@ -60,7 +62,9 @@ struct Field
     
     ~Field() {
         
-        delete[] array;
+        if (array) {
+            delete[] array;
+        }
     }
     
     Field(const Field& other) {
@@ -71,6 +75,12 @@ struct Field
     }
     
     bool addRect(Rect rect) {
+        
+        steps++;
+        
+        if (bestResult==0) {
+            return false; //we already have the best result we can get
+        }
         
         //How many gaps were skipped. Is this number greater than bestResult?
         int numSkippedGaps = 0;
@@ -107,7 +117,7 @@ struct Field
         //cannot fit it anywhere
         if (containsRequiredRects()) {
             
-            print();
+            //print();
             
             int result = getNumberOfGaps();
             
@@ -237,13 +247,37 @@ struct Field
 
 //-----------------------------------------------
 
+struct Item
+{
+    Item() {
+        field = NULL;
+        rect = NULL;
+    }
+    
+    Item(Field* field, Rect* rect) {
+    
+        this->field = field;
+        this->rect = rect;
+    }
+    
+    ~Item() {
+        
+        if (field) {
+            delete field;
+        }
+        
+        if (rect) {
+            delete rect;
+        }
+    }
+    
+    Field* field;
+    Rect* rect;
+};
+
+//-----------------------------------------------
+
 void fillFieldWithRect(Field field, Rect rect) {
-    
-    /*steps++;
-    
-    if (steps % 1000 == 0) {
-        std::cout << steps << std::endl;
-    }*/
     
     if (field.addRect(rect)) {
         //std::cout << "yes";
@@ -259,19 +293,61 @@ void fillFieldWithRect(Field field, Rect rect) {
     }
 }
 
-//-----------------------------------------------
-
-int main(int argc, const char * argv[])
-{
-
-    Field field = Field(9, 9);
+void processUeingRecursion(Field field) {
     
     fillFieldWithRect(field, Rect(3, 3));
     fillFieldWithRect(field, Rect(2, 4));
     fillFieldWithRect(field, Rect(4, 2));
     fillFieldWithRect(field, Rect(1, 5));
     fillFieldWithRect(field, Rect(5, 1));
+}
+
+void processUsingStack(Field field) {
     
+    std::list<Item*> stack;
+    
+    stack.push_back(new Item(new Field(field), new Rect(3, 3)));
+    stack.push_back(new Item(new Field(field), new Rect(2, 4)));
+    stack.push_back(new Item(new Field(field), new Rect(4, 2)));
+    stack.push_back(new Item(new Field(field), new Rect(1, 5)));
+    stack.push_back(new Item(new Field(field), new Rect(5, 1)));
+    
+    while (stack.size()) {
+        
+        Field* pField = stack.front()->field;
+        Rect* rect = stack.front()->rect;
+        
+        if(pField->addRect(*rect)) {
+            
+            stack.push_back(new Item(new Field(*pField), new Rect(3, 3)));
+            stack.push_back(new Item(new Field(*pField), new Rect(2, 4)));
+            stack.push_back(new Item(new Field(*pField), new Rect(4, 2)));
+            stack.push_back(new Item(new Field(*pField), new Rect(1, 5)));
+            stack.push_back(new Item(new Field(*pField), new Rect(5, 1)));
+        }
+        else {
+            //std::cout << "X" << std::endl;
+        }
+        
+        Item* itemToDelete = stack.front();
+        stack.pop_front();
+        delete itemToDelete;
+    }
+}
+
+//-----------------------------------------------
+
+int main(int argc, const char * argv[])
+{
+
+    Field field = Field(6, 5);
+    
+    
+    //processUeingRecursion(field);
+    processUsingStack(field);
+    
+    
+    std::cout << "num steps " << steps << std::endl;
     std::cout << "best result " << bestResult << std::endl;
     
     return 0;
