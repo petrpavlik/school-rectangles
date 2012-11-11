@@ -8,6 +8,10 @@
 
 #include <iostream>
 #include <list>
+#include "mpi.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 //unsigned int rectWidth = 10;
 //unsigned int rectHeight = 12;
@@ -50,6 +54,8 @@ struct Rect
 //represents a field
 struct Field
 {
+    
+public:
 
     Field(unsigned int width, unsigned int height) {
 
@@ -123,11 +129,13 @@ struct Field
             
             if (bestResult == -1 || result < bestResult) {
                 bestResult = result;
-                std::cout << "best result so far " << bestResult << std::endl;
+                //std::cout << "best result so far " << bestResult << std::endl;
             }
         }
         return false;
     }
+  
+private:
     
     bool tryToFitRect(Rect rect) {
         
@@ -357,15 +365,33 @@ void processUsingStack2(Field field) {
 int main(int argc, const char * argv[])
 {
 
-    Field field = Field(9, 9);
+    double tStart, tEnd;
+    
+    tStart = MPI_Wtime ();
+    
+    int w=6;
+    int h=5;
+    
+    if (argc>1) {
+        w = atoi(argv[1]);
+        h = atoi(argv[2]);
+    }
+    
+    printf("field size %dx%d\n", w, h);
+    
+    Field field = Field(w, h);
     
     
     //processUeingRecursion(field);
     processUsingStack2(field);
     
+    tEnd = MPI_Wtime();
+    
+    printf("best result %d\n", bestResult);
+    printf("time %fs\n", tEnd-tStart);
     
     std::cout << "num steps " << steps << std::endl;
-    std::cout << "best result " << bestResult << std::endl;
+    //std::cout << "best result " << bestResult << std::endl;
     
     return 0;
 }
